@@ -1,8 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
 
-name: Build and deploy Python app to Azure Web App - shinozaki-test-0402
+name: Build and deploy Node.js app to Azure Web App - shinozaki-test-0402
 
 on:
   push:
@@ -17,31 +16,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python version
-        uses: actions/setup-python@v1
+      - name: Set up Node.js version
+        uses: actions/setup-node@v3
         with:
-          python-version: '3.11'
+          node-version: '20.x'
 
-      - name: Create and start virtual environment
+      - name: npm install, build, and test
         run: |
-          python -m venv venv
-          source venv/bin/activate
-      
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-        
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
+          npm install
+          npm run build --if-present
+          npm run test --if-present
 
       - name: Zip artifact for deployment
         run: zip release.zip ./* -r
 
-      - name: Upload artifact for deployment jobs
+      - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
         with:
-          name: python-app
-          path: |
-            release.zip
-            !venv/
+          name: node-app
+          path: release.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -56,23 +49,23 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
         with:
-          name: python-app
+          name: node-app
 
       - name: Unzip artifact for deployment
         run: unzip release.zip
-
       
       - name: Login to Azure
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_ACD31A00592E45FEB55FBD7A32E6F9F8 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0FEA86AC210B475C928FAF07431D0943 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_891971E185B84EF88BB50FE7BC9FE9A7 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_388A06CE0F2248FA84E425A132CDA31A }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_FC2DFA0E64504DA2B4E872F47F5F8252 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_5F07AD8853264ADBBD86F1DC4132CA76 }}
 
       - name: 'Deploy to Azure Web App'
-        uses: azure/webapps-deploy@v2
         id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
         with:
           app-name: 'shinozaki-test-0402'
           slot-name: 'Production'
+          package: .
           
